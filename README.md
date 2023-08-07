@@ -1,2 +1,2 @@
 # jobmarketanalysis
-Apporter une aide à la décisions pour un utilisateur qui cherche un emploi grâce à un modèle d'IA
+Aider un utilisateur à trouver un job qui lui correspond grâce à un modèle d'IA

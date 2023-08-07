@@ -1,0 +1,7 @@
+Collecting jupyterlab-widgets
+  Obtaining dependency information for jupyterlab-widgets from https://files.pythonhosted.org/packages/74/5e/2475ac62faf2e342b2bf20b8d8e375f49400ecb38f52e4e0a7557eb1cedb/jupyterlab_widgets-3.0.8-py3-none-any.whl.metadata
+  Downloading jupyterlab_widgets-3.0.8-py3-none-any.whl.metadata (4.1 kB)
+Downloading jupyterlab_widgets-3.0.8-py3-none-any.whl (214 kB)
+   ---------------------------------------- 215.0/215.0 kB 2.6 MB/s eta 0:00:00
+Installing collected packages: jupyterlab-widgets
+Successfully installed jupyterlab-widgets-3.0.8

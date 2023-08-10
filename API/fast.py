@@ -1,56 +1,59 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import numpy as np
 from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.text import tokenizer_from_json
+from generate import generate_text
+import logging
 
-# Load your trained model
-model = load_model('model.h5')
-
-# Create the FastAPI app object
 app = FastAPI()
 
-# Define your input data structure
-class JobData(BaseModel):
-    graduation: str
-    skills: str
-    contract_type: str
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
-# Index route, opens automatically on http://127.0.0.1:8000
+# Load the model and tokenizer
+model = load_model('model.h5')
+
+with open("tokenizer.json", "r") as file:
+    tokenizer_config = file.read()
+    tokenizer = tokenizer_from_json(tokenizer_config)
+
+class JobData(BaseModel):
+    tools: str
+    description: str
+
 @app.get('/')
 def index():
     return {'message': 'Hello, stranger, from local'}
 
-# Expose the prediction functionality
 @app.post('/predict')
 def predict_job(job_data: JobData):
-    data = job_data.dict()
+    try:
+        data = job_data.dict()
 
-    # Process your input data here...
-    # This is a placeholder. You should implement your preprocessing, tokenization, etc.
-    input_array = process_input(data['graduation'], data['skills'], data['contract_type'])
-    
-    prediction = model.predict(input_array)
+        # Tokenize tools and description separately and ensure they produce single sequences
+        tools_sequence = tokenizer.texts_to_sequences([data['tools']])[0]
+        description_sequence = tokenizer.texts_to_sequences([data['description']])[0]
 
-    # Convert your prediction to a job title and description
-    # This again depends on your model and how you trained it.
-    # Placeholder for now.
-    job_title, job_description = decode_prediction(prediction)
+        # Set max_sequence_length according to the model's expected input sizes
+        max_sequence_length_tools = 22
+        max_sequence_length_description = 21
 
-    return {
-        'job_title': job_title,
-        'job_description': job_description
-    }
+        # Pad the sequences accordingly
+        tools_sequence_padded = pad_sequences([tools_sequence], maxlen=max_sequence_length_tools, padding='post')
+        description_sequence_padded = pad_sequences([description_sequence], maxlen=max_sequence_length_description, padding='post')
 
-def process_input(graduation, skills, contract_type):
-    # Placeholder function. You should implement your preprocessing here.
-    return np.array([graduation, skills, contract_type]).reshape(1, -1)
+        generated_text = generate_text([tools_sequence_padded, description_sequence_padded])
 
-def decode_prediction(prediction):
-    # Placeholder function to convert model output to readable format.
-    return "Sample Job Title", "Sample Job Description"
+        return {
+            'job_title': generated_text
+        }
 
-# Run the API with uvicorn
-# Will run on http://127.0.0.1:8000
+
+    except Exception as e:
+        logging.error("Exception occurred", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, host='127.0.0.1', port=8000)
+    uvicorn.run(app, host='0.0.0.0', port=8000)

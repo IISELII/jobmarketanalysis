@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+
+  # Streamlit Service
+  streamlit_app:
+    build:
+      context: ./streamlit   # Ensure this directory has the Dockerfile for streamlit_app
+    image: streamlit-app
+    ports:
+      - "8501:8501"
+    depends_on:
+      - fastapi_app
+    networks:
+      - mynetwork
+
+  # FastAPI Service
+  fastapi_app:
+    build:
+      context: ./API  # Ensure this directory has the Dockerfile for fastapi_app
+    image: fastapiapp
+    ports:
+      - "8000:8000"
+    networks:
+      - mynetwork
+
+# Custom Network
+networks:
+  mynetwork:
